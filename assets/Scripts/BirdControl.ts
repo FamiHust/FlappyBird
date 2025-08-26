@@ -1,25 +1,47 @@
-import { _decorator, Component, Node, EventTouch, input, Input, Vec3 } from 'cc';
+import { _decorator, Component, Node, CCFloat, Vec3, Animation, tween } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BirdControl')
 export class BirdControl extends Component {
 
-    // Speed of bird
-    private speed: number = 0;
+    @property({
+        type: CCFloat,
+        tooltip: 'how high can they fly'
+    })
+    public jumpHeight: number = 3.5;
 
-    onLoad () {
-        input.on(Input.EventType.TOUCH_START, this.onTouchStart, this);
+    @property({
+        type: CCFloat,
+        tooltip: 'how long can they fly'
+    })
+    public jumpDuration: number = 3.5;
+
+    public birdAnimation: Animation;
+    public birdLocation: Vec3;
+
+    onLoad(){
+        this.resetBird();
+
+        this.birdAnimation = this.getComponent(Animation);
     }
 
-    update (dt: number) {
-        this.speed -= 0.05;
-        
-        let pos = this.node.getPosition();
-        
-        this.node.setPosition(pos.x, pos.y + this.speed, pos.z);
+    resetBird(){
+       this.birdLocation = new Vec3(0,0,0); 
+
+       this.node.setPosition(this.birdLocation);
     }
 
-    onTouchStart (event: EventTouch) {
-        this.speed = 2;
+    fly(){
+        this.birdAnimation.stop();
+
+        tween(this.node.position)
+            .to(this.jumpDuration, new Vec3(this.node.position.x, this.node.position.y + this.jumpHeight, 0), {easing: "smooth",
+                onUpdate: (target: Vec3, ratio: number) => {
+                    this.node.position = target;
+                }
+            })
+            .start();
+        
+        this.birdAnimation.play(); 
     }
 }

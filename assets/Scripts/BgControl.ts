@@ -1,7 +1,7 @@
 import { _decorator, Component, Sprite } from 'cc';
 const { ccclass, property } = _decorator;
 
-@ccclass('MainControl')
+@ccclass('BgControl')
 export class MainControl extends Component {
 
     @property([Sprite])
