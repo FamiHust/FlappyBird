@@ -25,7 +25,6 @@ export class Pipes extends Component {
 
     public game;
     public pipeSpeed: number;
-    public tempSpeed: number = 8.5;
 
     isPass: boolean;
 
@@ -48,21 +47,42 @@ export class Pipes extends Component {
 
         this.bottomPipe.setPosition(this.tempStartLocationDown);
         this.topPipe.setPosition(this.tempStartLocationUp);
+        
+        // Reset isPass khi pipe mới được tạo
+        this.isPass = false;
+        console.log("New pipe created, isPass reset to false");
     }
 
-    update() {
+    update(deltaTime: number) {
         this.tempStartLocationDown = this.bottomPipe.position;
         this.tempStartLocationUp = this.topPipe.position;
+        
+        // Debug: hiển thị vị trí chim mỗi 60 frames (khoảng 1 giây)
+        if (Math.floor(Date.now() / 1000) % 2 === 0) {
+            console.log("Bird position: x=" + this.game.bird.node.position.x + ", y=" + this.game.bird.node.position.y);
+        }
 
-        this.tempStartLocationDown.x -= this.tempSpeed;
-        this.tempStartLocationUp.x -= this.tempSpeed;
+        // Sử dụng pipeSpeed từ GameControl với deltaTime để di chuyển mượt mà
+        this.tempStartLocationDown.x -= this.pipeSpeed * deltaTime;
+        this.tempStartLocationUp.x -= this.pipeSpeed * deltaTime;
 
         this.bottomPipe.setPosition(this.tempStartLocationDown);
         this.topPipe.setPosition(this.tempStartLocationUp);
 
 
+        // Debug: luôn hiển thị vị trí pipe để kiểm tra
+        if (this.topPipe.position.x % 100 < 5) { // Hiển thị mỗi 100px
+            console.log("Pipe position: x=" + this.topPipe.position.x + ", isPass=" + this.isPass);
+        }
+        
+        // Debug chi tiết scoring
+        console.log("Scoring check: isPass=" + this.isPass + ", pipe.x=" + this.topPipe.position.x + ", condition=" + (this.isPass == false && this.topPipe.position.x <= 50));
+        
+        // Tính điểm khi chim vượt qua pipe (khi pipe đi qua vị trí chim)
         if (this.isPass == false && this.topPipe.position.x <= 0) {
             this.isPass = true;
+            console.log("Score! Pipe passed bird at x=" + this.topPipe.position.x);
+            console.log("Bird position should be around x=0, pipe is at x=" + this.topPipe.position.x);
             this.game.passPipe();
         }
 
@@ -71,7 +91,8 @@ export class Pipes extends Component {
             this.game.createPipe();
         }
 
-        if (this.topPipe.position.x < (0 - this.scene.width)) {
+        // Để pipes ra ngoài màn hình một đoạn rồi mới dừng
+        if (this.topPipe.position.x < (0 - this.scene.width * 1.5)) {
             this.destroy();
         }
     }

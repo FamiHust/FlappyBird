@@ -47,6 +47,7 @@ export class GameControl extends Component {
 
     onLoad(){
         this.initListener();
+        this.contactGroundPipe(); // Set up collision detection once
 
         this.result.resetScore();
         this.isOver = true;
@@ -89,6 +90,7 @@ export class GameControl extends Component {
     }
 
     passPipe() {
+        console.log("passPipe() called! Adding score...");
         this.result.addScore();
         BirdAudio.instance.onAudioQueue(1);
     }
@@ -106,15 +108,23 @@ export class GameControl extends Component {
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null){
-        this.bird.hitSomething = true;
-        BirdAudio.instance.onAudioQueue(2);
+        // Debug chi tiết: xem chim và pipe ở đâu khi va chạm
+        console.log("Bird hit:", otherCollider.node.name);
+        console.log("Bird position:", this.bird.node.position);
+        console.log("Pipe position:", otherCollider.node.position);
+        
+        // Chỉ game over khi chim thực sự chạm vào pipe hoặc ground
+        if (otherCollider.node.name.includes("Pipe") || otherCollider.node.name.includes("Ground")) {
+            this.bird.hitSomething = true;
+            BirdAudio.instance.onAudioQueue(2);
+        }
     }
 
     birdStruck() {
-        this.contactGroundPipe();
-
+        // Only check if bird hit something, don't set up collision detection again
         if (this.bird.hitSomething == true)
         {
+            console.log("Game Over triggered at bird position:", this.bird.node.position);
             this.gameOver();
         }
     }

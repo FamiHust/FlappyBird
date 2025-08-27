@@ -33,6 +33,7 @@ export class Results extends Component {
         this.hideResults();
     }
     addScore() {
+        console.log("Results.addScore() called! Current score: " + this.currentScore + " -> " + (this.currentScore + 1));
         this.updateScore(this.currentScore + 1);
     }
 
